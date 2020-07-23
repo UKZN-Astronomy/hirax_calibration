@@ -192,7 +192,7 @@ def lstsq(manager_config_file,A_rec,N_rec,mv):
     Returns
     -------
     x_rec_real : ndarray
-        recovered gains (Ndish,)
+        recovered gains (Ndish + Nblock,)
     '''
 
     t = manager_config_file.telescope
