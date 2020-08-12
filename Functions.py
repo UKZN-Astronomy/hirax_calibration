@@ -21,6 +21,7 @@ sys.path.insert(0,'/home/zahra/hirax_tools/')
 from hirax_tools import array_config
 from LogCal_code import Bls_counts
 from cora.foreground import poisson as ps
+import numpy.random.normal as rand_normal
 
 
 def baseline_arr(m, freq):
@@ -418,7 +419,6 @@ def fit_gains(runs, src_array, vecs, visibilities):
     S_max =  5 * 12 * 1.e-6 * np.sqrt(1024./Ndish)
     sigma = S_max*0.01 # we include a small amount of per visibility noise
     diag = sigma**2*np.ones(2*Nbls)
-    rand_normal = np.random.normal
     random_gain = rand_normal(0,1.e-3, 2*Ndish) #initial guess input into corrcal
     gvec = sim_gains + random_gain
 
@@ -472,7 +472,6 @@ sigma = S_max*0.01
 
 N_noise_arr = np.zeros((runs, 2*Nbls))
 for ind_run in range(runs):
-    np.random.seed(1)
     N_noise = np.random.normal(0, sigma, 2*Nbls)
     N_noise_arr[ind_run, :] = N_noise
 
