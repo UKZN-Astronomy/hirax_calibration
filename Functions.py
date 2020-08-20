@@ -21,7 +21,6 @@ sys.path.insert(0,'/home/zahra/hirax_tools/')
 from hirax_tools import array_config
 from LogCal_code import Bls_counts
 from cora.foreground import poisson as ps
-import numpy.random.normal as rand_normal
 
 
 def baseline_arr(m, freq):
@@ -30,6 +29,7 @@ def baseline_arr(m, freq):
 
     Parameters
     ----------
+    m : Prod params file
     freq : float
         The frequency at which you are observing (in MHz).
 
@@ -68,6 +68,7 @@ def Gauss_beam(m, freq, nside):
 
     Parameters
     ----------
+    m : Prod params file
     freq : float
         The frequency at which you are observing (in MHz).
     nside : int
@@ -99,6 +100,7 @@ def Mu(m, index):
 
     Parameters
     ----------
+    m : Prod params file
     index : int
         Input the index of source flux, S, depending on what you which to calculate
         n = 2 for visibilities due to unresolved point sources following a Poisson distribution
@@ -203,6 +205,7 @@ def Src_vector(m, freq, nside, map, thresh_max_vals_beam):
 
     Parameters
     ----------
+    m : Prod params file
     freq : float
         The frequency at which you are observing (in MHz).
     nside : int
@@ -257,6 +260,7 @@ def Visibilities_poisson(m, freq, nside):
 
     Parameters
     ----------
+    m : Prod params file
     freq : float
         The frequency at which you are observing (in MHz).
     nside : int
@@ -301,6 +305,7 @@ def Covariance_poisson(m, freq, nside):
 
     Returns
     -------
+    m : Prod params file
     vis_poisson : dict
         Separate n x n covariance matrices for each redundant block, with the matrix size
         depending on the baseline redundancy, in units [Jy^2]
@@ -342,6 +347,7 @@ def Vecs(m, freq, nside):
 
     Parameters
     ----------
+    m : Prod params file
     freq : float
         The frequency at which you are observing (in MHz).
     nside : int
@@ -389,7 +395,8 @@ def Vecs(m, freq, nside):
     vecs= vecs.T
     return vecs
 
-def fit_gains(runs, src_array, vecs, visibilities):
+
+def fit_gains(m, runs, src_array, vecs, visibilites):
     '''
     Computes the recovered gains for both amplitude and phase. The inputs include the source
     vector, S. The two options for the vector depend on whether or not source positions are
@@ -402,6 +409,7 @@ def fit_gains(runs, src_array, vecs, visibilities):
 
     Parameters
     ----------
+    m : Prod params file
     runs : int
         Number of noise realisations you want to do (500 runs is sufficient)
     src_array : ndarray
@@ -416,10 +424,27 @@ def fit_gains(runs, src_array, vecs, visibilities):
     recovered gains : ndarray
         Recovered gains separated in real (amplitude) and imaginary (phase) components (2*Ndish)
     '''
+
+    t = m.telescope
+    Nfeeds,_= t.feedpositions.shape
+    Ndish = np.int(Nfeeds/2)
+    Nbls = np.int(Ndish*(Ndish-1)/2)
+
+    bl_arr_dish_indices, sum_counts, bl_counts = Bls_counts(m)
+    lims = np.append(0, sum_counts) #these are the edges of the redundant blocks
+
+    ant1 = bl_arr_dish_indices[:,0].astype(int)
+    ant2 = bl_arr_dish_indices[:,1].astype(int)
+
+    gain = np.ones(Ndish)
+    sim_gains = np.ones(2*Ndish)
+    sim_gains[::2] = gain.real
+    sim_gains[1::2] = gain.imag
+
     S_max =  5 * 12 * 1.e-6 * np.sqrt(1024./Ndish)
     sigma = S_max*0.01 # we include a small amount of per visibility noise
     diag = sigma**2*np.ones(2*Nbls)
-    random_gain = rand_normal(0,1.e-3, 2*Ndish) #initial guess input into corrcal
+    random_gain = np.random.normal(0,1.e-3, 2*Ndish) #initial guess input into corrcal
     gvec = sim_gains + random_gain
 
     get_chisq = corrcal.get_chisq
@@ -429,7 +454,7 @@ def fit_gains(runs, src_array, vecs, visibilities):
     rec_gains = np.zeros((runs,Ndish*2))
     for ind_run in range(runs):
         print (ind_run)
-        Noise_array = rand_normal(0, sigma, 2*Nbls)
+        Noise_array = np.random.normal(0, sigma, 2*Nbls)
         data = np.zeros(2*visibilities.size)
         data[0::2] = visibilities.real + Noise_array[::2]
         data[1::2] = visibilities.imag + Noise_array[1::2]
@@ -440,6 +465,70 @@ def fit_gains(runs, src_array, vecs, visibilities):
         rec_gains[ind_run,:] = fit_gains_run
         print (fit_gains_run[::2])
     return rec_gains
+
+def fit_gains_base(m, run, src_array, vecs, visibilites):
+    '''
+    This is slightly different from the above function in that this function doesn't contain a for loop over the runs. Also, we save the recovered gains from each run
+
+    Parameters
+    ----------
+    m : Prod params file
+    run : int
+        Input the integer corresponding to the run number so that the recovered gains can be saved for each run
+    src_array : ndarray
+        The source vector, S (2*Nsources, 2*Nbls)
+    vecs : ndarray
+        The covariance vector, R (2*Nvec, 2*Nbls)
+    visibilities : ndarray
+        Noiseless visibilities (Nbls,)
+
+    Returns
+    -------
+    recovered gains : ndarray
+        Recovered gains separated in real (amplitude) and imaginary (phase) components (2*Ndish)
+    '''
+
+
+    t = m.telescope
+    Nfeeds,_= t.feedpositions.shape
+    Ndish = np.int(Nfeeds/2)
+    Nbls = np.int(Ndish*(Ndish-1)/2)
+
+    bl_arr_dish_indices, sum_counts, bl_counts = Bls_counts(m)
+    lims = np.append(0, sum_counts) #these are the edges of the redundant blocks
+
+    ant1 = bl_arr_dish_indices[:,0].astype(int)
+    ant2 = bl_arr_dish_indices[:,1].astype(int)
+
+    gain = np.ones(Ndish)
+    sim_gains = np.ones(2*Ndish)
+    sim_gains[::2] = gain.real
+    sim_gains[1::2] = gain.imag
+
+    S_max =  5 * 12 * 1.e-6 * np.sqrt(1024./Ndish)
+    sigma = S_max*0.01 # we include a small amount of per visibility noise
+    diag = sigma**2*np.ones(2*Nbls)
+    random_gain = np.random.normal(0,1.e-3, 2*Ndish) #initial guess input into corrcal
+    gvec = sim_gains + random_gain
+
+    get_chisq = corrcal.get_chisq
+    get_gradient = corrcal.get_gradient
+    mat = corrcal.Sparse2Level(diag,vecs,src_array,2*lims)
+
+    rec_gains = np.zeros(Ndish*2)
+    Noise_array = np.random.normal(0, sigma, 2*Nbls)
+    data = np.zeros(2*visibilities.size)
+    data[0::2] = visibilities.real + Noise_array[::2]
+    data[1::2] = visibilities.imag + Noise_array[1::2]
+    fac=1.;
+    normfac=1.
+    results = fmin_cg(get_chisq, gvec*fac, get_gradient,(data,mat,ant1,ant2,fac,normfac))
+    fit_gains_run = results/fac
+    rec_gains = fit_gains_run
+    np.save('/data/zahrakad/hirax_corrcal/output_runs/gain_amps_' + str(run), fit_gains_run[::2])
+    print (fit_gains_run[::2], 'rec gain amps')
+    return rec_gains
+
 
 '''
 I altered the above function to be able to compute the recovered gains using multiple cores on my laptop
