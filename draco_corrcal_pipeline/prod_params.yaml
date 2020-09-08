@@ -1,0 +1,71 @@
+config:
+    beamtransfers:      Yes
+    kltransform:        Yes
+    psfisher:           Yes
+
+    output_directory:   ./bt_matrices
+
+telescope:
+    type:
+        # Mechanism to specify a custom class
+        class:  HIRAXSurvey
+        module: hirax_transfer.core
+
+    # For a single pointing use:
+    #
+    pointing_start: 0
+    pointing_stop: 0
+    npointings: 1
+
+    hirax_spec:
+        # Set band parameters:
+        freq_lower: 600.
+        freq_upper: 600.78125
+        num_freq: 2
+        # Other parameters (See drift.core.telescope)
+        auto_correlations: No
+        tsys_flat: 50.0
+        redundancy_boost: 64.0
+        dish_width: 6.0
+        num_pol_sky: 1
+        lmax: 200
+        mmax: 200
+        ndays: 1 # When noise weighting is needed, will assume an integration
+                   # time of this many days.
+
+        hirax_layout: # See hirax_transfer.layouts
+            type: square_grid_pt1
+            spacing: 6.0
+            grid_size: 3
+
+        hirax_beam: # See hirax_transfer.beams
+            type: airy
+            diameter: 6.
+
+kltransform:
+
+    - type: KLTransform
+      name: kl_fg_0thresh
+      inverse: Yes
+      threshold: 0
+      use_thermal: Yes
+      use_foregrounds: No
+      use_polarised: No
+
+psfisher:
+    -   type:           MonteCarlo
+        name:           psmc_kl_fg_0thresh
+        klname:         kl_fg_0thresh
+        threshold:      0
+        bandtype:       cartesian
+        kpar_bands:
+        -   spacing:    linear
+            start:      0.01
+            stop:       0.10
+            num:        9
+
+        kperp_bands:
+        -   spacing:    linear
+            start:      0.01
+            stop:       0.10
+            num:        9

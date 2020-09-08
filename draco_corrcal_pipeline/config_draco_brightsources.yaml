@@ -1,0 +1,39 @@
+pipeline:
+    tasks:
+        -   type:       draco.core.task.SetMPILogging
+
+        -   type:       draco.core.io.LoadBeamTransfer
+            out:        [tel, bt]
+            params:
+                product_directory:  "bt_matrices/bt/"
+
+        -   type:       draco.core.io.LoadMaps
+            out:        imap
+            params:
+                maps:
+                    files:
+                        - "/home/zahra/hirax_corrcal/draco_corrcal_pipeline/pointsource_brightsources.h5"
+
+        -   type:       draco.synthesis.stream_brightsources.SimulateSidereal
+            requires:   bt
+            in:         imap
+            out:        sstream
+            params:
+                save:   No
+
+        -   type:       draco.synthesis.stream_brightsources.ExpandProducts
+            requires:   tel
+            in:         sstream
+            out:        sstream2
+            params:
+                save:   No
+
+        -   type:       draco.synthesis.stream_brightsources.MakeTimeStream
+            requires:   [sstream2, tel]
+            out:        tstream
+            params:
+                start_time: 2019-04-05 12:15:00
+                end_time:   2019-04-05 12:16:00
+                integration_frame_exp: 23
+                save:   Yes
+                output_root: "draco_synthesis/tstream_brightsources_"

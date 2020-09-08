@@ -1,0 +1,40 @@
+pipeline:
+    tasks:
+        -   type:       draco.core.task.SetMPILogging
+
+        -   type:       draco.core.io.LoadProductManager
+            out:        pm
+            params:
+              product_directory:  'bt_matrices/'
+
+        -   type:       draco.core.io.LoadFilesFromParams
+            out:        gain_file
+            params:
+                files: ["gains_error.h5"]
+
+        -   type:       draco.core.io.LoadFilesFromParams
+            out:        tstream
+            params:
+                files: ["draco_synthesis/1_tstream_allsources_0.h5"]
+
+        -   type:       draco.synthesis.gain.Gains_from_File
+            in:         [tstream, gain_file]
+            out:        gain_fluc
+
+        -   type:       draco.core.misc.ApplyGain
+            in:         [tstream, gain_fluc]
+            out:        tstream2
+            params:
+                inverse: No
+                output_root: "draco_synthesis/tstream_recovered_noiseless_"
+                save: Yes
+
+        -   type:       draco.synthesis.noise.GaussianNoise
+            in:         tstream2
+            out:        tstream3
+            params:
+                save:   Yes
+                output_root: "draco_synthesis/tstream_recovered_gain_noise_"
+                seed: 10
+                ndays: 1
+                recv_temp: 50

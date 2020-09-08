@@ -1,0 +1,68 @@
+pipeline:
+    tasks:
+        -   type:       draco.core.task.SetMPILogging
+
+        -   type:       draco.core.io.LoadBeamTransfer
+            out:        [tel, bt]
+            params:
+                product_directory:  "bt_matrices/bt/"
+
+        -   type:       draco.core.io.LoadMaps
+            out:        imap
+            params:
+                maps:
+                    files:
+                        - "/home/zahra/hirax_corrcal/draco_corrcal_pipeline/pointsource_allsources.h5"
+
+        -   type:       draco.synthesis.stream.SimulateSidereal
+            requires:   bt
+            in:         imap
+            out:        sstream
+            params:
+                save:   Yes
+                output_root: "draco_synthesis/sstream_allsources_"
+
+        -   type:       draco.synthesis.stream.ExpandProducts
+            requires:   tel
+            in:         sstream
+            out:        sstream2
+            params:
+                save:   Yes
+
+        -   type:       draco.synthesis.stream.MakeTimeStream
+            requires:   [sstream2, tel]
+            out:        tstream
+            params:
+                start_time: 2019-04-05 12:15:00
+                end_time:   2019-04-05 12:16:00
+                integration_frame_exp: 23
+                save:   Yes
+                output_root: "draco_synthesis/1_tstream_allsources_"
+
+        -   type:       draco.synthesis.gain.RandomGains
+            in:         tstream
+            out:        gain_fluc
+            params:
+                output_root: "draco_synthesis/2_rand_gains_"
+                save:   Yes
+                sigma_amp: .1
+                sigma_phase: .1
+
+
+        -   type:       draco.core.misc.ApplyGain
+            in:         [tstream, gain_fluc]
+            out:        tstream2
+            params:
+                inverse: No
+                output_root: "draco_synthesis/3_tstream_noiseless_"
+                save: Yes
+
+        -   type:       draco.synthesis.noise.GaussianNoise
+            in:         tstream2
+            out:        tstream3
+            params:
+                save:   Yes
+                output_root: "draco_synthesis/4_tstream_gain_noise_"
+                seed: 10
+                ndays: 1
+                recv_temp: 50
