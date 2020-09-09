@@ -15,7 +15,7 @@ def log(function):
     return np.log(function)
 
 def index_find(input_arr,ind_1,ind_2):
-    '''Find the elements in an input array that have dish indices ind_1 and ind_2'''
+    '''Find the elements in an input array that have first component of ind_1 and second component of ind_2'''
     arr_find=np.where(input_arr==[ind_1, ind_2])[0]
     full_arr_index=np.array([])
     for i in range(len(arr_find)-1):
@@ -23,15 +23,25 @@ def index_find(input_arr,ind_1,ind_2):
             full_arr_index=np.append(full_arr_index,arr_find[i])
     return full_arr_index
 
+def prod_ind(ts_file,ind_1,ind_2):
+    a_loc=np.where(ts_file['input_a']==ind_1)[0]
+    b_loc=np.where(ts_file['input_b']==ind_2)[0]
+    for i in a_loc:
+        for j in b_loc:
+            if i==j:
+                location=i
+    return location
+
 def Bls_counts(manager_config_file):
     '''
+    Note that this function uses the NOMINAL dish positions - i.e. you input the config file corresponding to the perfectly redundant array.
     Organises the baselines in order of redundancy (from most to least redundant) and gives the number of redundant bls for each of the unique bls. The number
-    of unique baselines is equal to the number of redundant blocks, Nblock
+    of unique baselines is equal to the number of redundant blocks, Nblock.
 
     Parameters
     ----------
     manager_config_file : config file
-        Config file from driftscan runs (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
+        Config file from driftscan runs using NOMINAL dish positions (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
 
     Returns
     -------
@@ -66,10 +76,9 @@ def Bls_counts(manager_config_file):
                             bl_info_matrix = np.append(bl_info_matrix, arr_sing)
     bl_info_matrix = np.reshape(bl_info_matrix,(-1,4)) # 4 columns - first 2 give dish indices of bls, third and fourth give the corresponding baseline length in x and y
     # directions respectively
-    _, ind, bl_counts = np.unique(bl_info_matrix[:,2:4],return_counts=True,return_index=True,axis=0)
+    _, ind, bl_counts = np.unique(bl_info_matrix[:,2:4], return_counts=True, return_index=True, axis=0)
     arranged_bl_counts = np.flip(np.sort(bl_counts))
     arranged_bl_counts_indices = np.flip(np.argsort(bl_counts))
-    arranged_unique_bls = bl_info_matrix[:,0:2][ind[arranged_bl_counts_indices]]
     arranged_unique_bls_lengths = bl_info_matrix[:,2:4][ind[arranged_bl_counts_indices]]
     full_indices_list_all_bls = np.array([])
     for i in range(arranged_unique_bls_lengths.shape[0]):
@@ -77,8 +86,36 @@ def Bls_counts(manager_config_file):
         full_indices_list_all_bls = np.append(full_indices_list_all_bls, indices_list_one_bl)
     full_indices_list_all_bls = full_indices_list_all_bls.astype(int)
     arranged_dish_indices = bl_info_matrix[:,0:2][full_indices_list_all_bls]
+
+    bl_xy_lengths_redundancy_ordered_nominal = bl_info_matrix[:,2:4][full_indices_list_all_bls]
+    bl_abs_mag_length_redundancy_ordered_nominal = np.linalg.norm(bl_xy_lengths_redundancy_ordered_nominal, axis=1)
+    bl_descrip_list_nominal = []
+    for i in bl_xy_lengths_redundancy_ordered_nominal:
+        bl_descrip = (str(np.int(i[0])) + ' EW' + ', ' + str(np.int(i[1])) + ' NS')
+        bl_descrip_list_nominal = np.append(bl_descrip_list_nominal, bl_descrip)
+
     sum_counts = np.cumsum(arranged_bl_counts)
-    return arranged_dish_indices, sum_counts, arranged_bl_counts
+    return arranged_dish_indices, sum_counts, arranged_bl_counts, bl_abs_mag_length_redundancy_ordered_nominal, bl_descrip_list_nominal
+
+def Indices_for_reordering(manager_config_file, disordered_input, h5_file=True):
+    arranged_dish_indices=Bls_counts(manager_config_file)[0]
+    Indices_array=np.array([])
+
+    if h5_file==True:
+        prods=disordered_input['index_map']['prod'][:]
+        for i in arranged_dish_indices:
+            Indices_array=np.append(Indices_array,prod_ind(prods,np.int(i[0]),np.int(i[1])))
+    else:
+        row, col = disordered_input.shape
+        for i in range(row):
+            if disordered_input[i,0] > disordered_input[i,1]:
+                 disordered_input[i,[0,1]] = disordered_input[i,[1,0]]
+
+        for i in arranged_dish_indices:
+                Indices_array=np.append(Indices_array,index_find(disordered_input,np.int(i[0]),np.int(i[1])))
+    Indices_array = Indices_array.astype(int)
+    return Indices_array
+
 
 def A_matrix(manager_config_file):
     '''
@@ -87,7 +124,7 @@ def A_matrix(manager_config_file):
     Parameters
     ----------
     manager_config_file : config file
-        Config file from driftscan runs (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
+        Config file from driftscan runs using NOMINAL dish positions (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
 
     Returns
     -------
@@ -138,7 +175,7 @@ def Noise_cov_matrix(manager_config_file,measured_vis,sigma):
     Parameters
     ----------
     manager_config_file : config file
-        Config file from driftscan runs (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
+        Config file from driftscan runs using NOMINAL dish positions (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
     measured vis: ndarray
         Visibilities with noise (Nbls,)
     sigma: float
@@ -181,7 +218,7 @@ def lstsq(manager_config_file,A_rec,N_rec,mv):
     Parameters
     ----------
     manager_config_file : config file
-        Config file from driftscan runs (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
+        Config file from driftscan runs using NOMINAL dish positions (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
     A_rec : ndarray
         A matrix
     N_rec : ndarray
@@ -212,7 +249,7 @@ def Logcal_solutions(manager_config_file,meas_vis_no_noise,true_vis, gain,meas_v
     Parameters
     ----------
     manager_config_file : config file
-        Config file from driftscan runs (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
+        Config file from driftscan runs using NOMINAL dish positions (using the Radio Cosmology packages - it's not necessary to use this for the LogCal code, but I found it useful)
     meas_vis_no_noise : ndarray
         Noiseless visibilities (Nbls,)
     true_vis : ndarray
@@ -233,8 +270,6 @@ def Logcal_solutions(manager_config_file,meas_vis_no_noise,true_vis, gain,meas_v
     '''
 
     t = manager_config_file.telescope
-    x = t.feedpositions[:,0]
-    y = t.feedpositions[:,1]
     Nfeeds, _ = t.feedpositions.shape
     Ndish = np.int(Nfeeds/2)
     bl_info_matrix = Bls_counts(manager_config_file)[0]
