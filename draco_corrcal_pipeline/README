@@ -1,4 +1,4 @@
 To navigate this folder, please refer to the run_everything.sh bash file. This file details the order in which the other files in the folder are executed, 
-and provides a small description of each command in the bash file. 
+and provides a small description of each command. 
 The `stream_brightsources.py` file is the only file that is not executed in run_everything.sh, and is instead used in `config_draco_brightsources.yaml` 
 to generate visibility timestreams for each bright source.
