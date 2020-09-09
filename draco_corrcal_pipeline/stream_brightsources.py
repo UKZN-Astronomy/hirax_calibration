@@ -92,22 +92,16 @@ class SimulateSidereal(task.SingleTask):
             )
 
         npix = map_brightsources.shape[2] #nfreq, npol, npix
-        nsource = np.nonzero(map_brightsources[0,0,:])[0].shape[0] # all non-zero pixels in a map containing just the real point sources from a source catalogue
+
+        non_zero_pix = np.unique(np.nonzero(map_brightsources[:])[2])
+        nsource = len(non_zero_pix)
         source_map = np.arange(nsource)
-        map_brightsources_full = np.zeros((nfreq,npol,nsource,npix)) # for actual real point source maps, nsource is
-        #number of sources in catalogue
-        for freq_sing in range(nfreq):
-            for pol_sing in range(npol):
-                sing_freq_pol = map_brightsources[freq_sing, pol_sing,:]
-                pix_indices = np.nonzero(sing_freq_pol)[0]
-                sing_freq_pol_nonzero = sing_freq_pol[pix_indices]
-                for pix_sing in range(len(pix_indices)):
-                    index = pix_indices[pix_sing]
-                    map_brightsources_full[freq_sing, pol_sing, pix_sing, index] = sing_freq_pol[index]
 
         vis_stream_full = np.zeros((nsource, lfreq, tel.npairs, ntime), dtype=complex)
+
         for source_ind in range(nsource):
-            row_map = map_brightsources_full[:,:,source_ind,:]
+            row_map = np.zeros((nfreq,npol,npix))
+            row_map[:,:,non_zero_pix[source_ind]] = map_brightsources[:,:,non_zero_pix[source_ind]]
 
             # Calculate the alm's for the local sections
             row_alm = hputil.sphtrans_sky(row_map, lmax=lmax).reshape(
