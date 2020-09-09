@@ -111,7 +111,7 @@ def Vecs(Cov_dic):
     vecs= vecs.T
     return vecs
 
-def fit_gains_base_noiseless(m, m_nominal, tstream_allsources, tstream_allsources_with_noise = True, source_positions_unknown=True, tstream_brightsources=None, vecs_redundant = True, unity_gains = True, gains_file = None):
+def fit_gains_base_noiseless(m, m_nominal, tstream_allsources, tstream_allsources_with_noise = True, source_positions_unknown=True, tstream_brightsources=None, vecs_redundant = True, unity_gains = True, gains_file = None, save_gains_error = False):
 
     '''
     Calculates complex gain errors (recovered gains - true gains) using CorrCal. The gain errors are placed in a h5 file under a `gain` header.
@@ -143,7 +143,9 @@ def fit_gains_base_noiseless(m, m_nominal, tstream_allsources, tstream_allsource
         If True, we assume simulated/true gains of 1. This would be the case if no gains are applied to the timestream data `tstream_allsources`.
         If False, the `tstream_allsources` does contain gains that are not exactly 1.
     gains_file: h5 file
-        Gains file if the true gains are not 1. Input this if `unity_gains` was set to False. 
+        Gains file if the true gains are not 1. Input this if `unity_gains` was set to False.
+    save_gains_error: boolean
+        If True, the gains error would be saved to an h5 file under a `gain` header. If False, it would not
     Returns
     -------
     recovered gains: ndarray
@@ -246,8 +248,12 @@ def fit_gains_base_noiseless(m, m_nominal, tstream_allsources, tstream_allsource
             gain_error_complex = rec_gains_complex - sim_gains_complex
             rec_gains_mat[freq_ind, :Ndish, time_ind] = rec_gains_complex
             gains_error_mat[freq_ind, :Ndish, time_ind] = gain_error_complex
-    gain_error_file = h5py.File('gains_error.h5')
-    gain_error_file.create_dataset('gain', data = gains_error_mat)
-    return rec_gains_mat, gain_error_file
+
+    if save_gains_error ==True:
+        gain_error_result = h5py.File('gains_error.h5')
+        gain_error_result.create_dataset('gain', data = gains_error_mat)
+    else:
+        gain_error_result = gains_error_mat
+    return rec_gains_mat, gain_error_result
 
 mat = fit_gains_base_noiseless(m, m_nominal, tstream_allsources, tstream_allsources_with_noise=True, source_positions_unknown=False, tstream_brightsources=tstream_brightsources, vecs_redundant = False, unity_gains = False, gains_file = rand_gains)
