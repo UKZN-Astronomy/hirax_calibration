@@ -145,7 +145,8 @@ def fit_gains_base_noiseless(m, m_nominal, tstream_allsources, tstream_allsource
     gains_file: h5 file
         Gains file if the true gains are not 1. Input this if `unity_gains` was set to False.
     save_gains_error: boolean
-        If True, the gains error would be saved to an h5 file under a `gain` header. If False, it would not
+        If True, the gains error would be saved to an h5 file under a `gain` header, which is needed to run the last command in `run_everything.sh` to 
+        get the visibility error. To get the gain output without creating the h5 file, set this to False.
     Returns
     -------
     recovered gains: ndarray
