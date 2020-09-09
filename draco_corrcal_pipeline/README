@@ -1,0 +1,3 @@
+README
+
+Please refer to run_everything.sh first. This bash file is used to execute all of the yaml and py files in this folder, with the exception of `stream_brightsources.py`, which is used in `config_draco_brightsources.yaml`.
