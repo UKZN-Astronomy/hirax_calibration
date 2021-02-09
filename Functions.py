@@ -108,7 +108,7 @@ def Gauss_beam(m, freq, nside):
     beam = np.exp(-seps**2/2/sigma_beam**2)
     return beam
 
-# The Mu function follows the equation $\mu_n = \int S^n \frac{dN}{dS} dS$, with n=2 used for visibilities and n=3 for sky cov
+# The Mu function follows the equation $\mu_n = \int S^{n-1} \frac{dN}{dS} dS$, with n=2 used for visibilities and n=3 for sky cov
 
 def Mu(m, index):
     '''
