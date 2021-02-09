@@ -1,4 +1,4 @@
-''' Update this file in the folder draco/draco/core'''
+''' Update this file in the folder draco/draco/core to be able to run stream_brightsources.py'''
 """Distributed containers for holding various types of analysis data.
 
 Containers
