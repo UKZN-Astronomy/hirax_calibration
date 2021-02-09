@@ -1,4 +1,4 @@
-'''Update this file in driftscan/drift/core'''
+'''Update this file in driftscan/drift/core to be able to run draco_corrcal_file.py'''
 
 # === Start Python 2/3 compatibility
 from __future__ import absolute_import, division, print_function, unicode_literals
