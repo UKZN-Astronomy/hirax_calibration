@@ -1,4 +1,4 @@
-'''Update this file in /cora/cora/scripts'''
+'''Update this file in /cora/cora/scripts to be able to run run_everything.sh'''
 
 """Command line script for making sky maps.
 
