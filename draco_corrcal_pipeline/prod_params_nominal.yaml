@@ -1,3 +1,5 @@
+'''Don't need to use this file to generate bt matrices - I use it to get the dish positions, redundant baselines, etc. for the nominal (unperturbed) 
+array'''
 config:
     beamtransfers:      Yes
     kltransform:        Yes
