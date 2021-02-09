@@ -1,4 +1,4 @@
-''' This file should be added to draco/draco/synthesis'''
+''' This file should be added to draco/draco/synthesis to be able to run config_draco_brightsources.yaml'''
 """Tasks for simulating sidereal and time stream data.
 
 A typical pattern would be to turn a map into a
