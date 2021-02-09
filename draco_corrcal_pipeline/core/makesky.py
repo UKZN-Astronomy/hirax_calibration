@@ -1,4 +1,4 @@
-'''Update this file in /home/zahra/PIPELINE_3/cora/cora/scripts'''
+'''Update this file in /cora/cora/scripts'''
 
 """Command line script for making sky maps.
 
