@@ -1,4 +1,4 @@
-''' In folder draco/draco/core'''
+''' Update this file in the folder draco/draco/core'''
 """Distributed containers for holding various types of analysis data.
 
 Containers
