@@ -1,4 +1,4 @@
-'''Update this file in the folder draco/draco/synthesis'''
+'''Update this file in the folder draco/draco/synthesis to be able to run config_draco_vis_after_calibration.yaml'''
 """Tasks for generating random gain fluctuations in the data and stacking them.
 
 Tasks
