@@ -1,3 +1,4 @@
+''' This file should be added to draco/draco/synthesis'''
 """Tasks for simulating sidereal and time stream data.
 
 A typical pattern would be to turn a map into a
