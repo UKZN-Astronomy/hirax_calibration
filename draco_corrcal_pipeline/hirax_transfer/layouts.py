@@ -1,4 +1,4 @@
-'''Update this file in hirax_transfer/hirax_transfer'''
+'''Update this file in hirax_transfer/hirax_transfer to be able to run prod_params.yaml'''
 
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
