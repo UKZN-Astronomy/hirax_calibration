@@ -5,3 +5,4 @@ The Code_without_draco folder contains scripts to calibrate using LogCal and Cor
 
 The Code_parallelisation_hippo folder has a bash script that can be used to speed up code by running multiple noise realisations in parallel. 
 
+The draco_corrcal_pipeline folder details work that has been done thus far to incorporate Radiocosmology packages (draco, driftscan, cora, etc) and CorrCal in an automated calibration pipeline.   
