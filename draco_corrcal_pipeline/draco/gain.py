@@ -1,4 +1,4 @@
-'''In folder - draco/draco/synthesis'''
+'''Update this file in the folder draco/draco/synthesis'''
 """Tasks for generating random gain fluctuations in the data and stacking them.
 
 Tasks
