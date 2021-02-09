@@ -10,14 +10,14 @@ caput-pipeline run config_draco.yaml #4
 
 caput-pipeline run config_draco_brightsources.yaml #5
 
-python draco_corrcal_file_1.py #6
+python draco_corrcal_file.py #6
 
 caput-pipeline run config_draco_vis_after_calibration.yaml #7
 
 
 # This bash file is used to calculate the relative visibilities for a perturbed array, whose recovered gains were calculated using CorrCal. The commands in the file are described as follows:
  
-#1 Generates a point source map using ONLY the bright point sources in the catalogue provided in cora. We choose a flux range between 1-2 Jy, in which the catalogue contains 6 sources. Note we consider only the zero polarisation.
+#1 Generates a point source map using ONLY the bright point sources in the catalogue provided in cora. Here, we chose a flux range between 1-2 Jy. Note we consider only the zero polarisation.
 
 #2 Generates a point source map for ALL sources - unresolved sources below 0.1 Jy; simulated sources between 0.1 and 1 Jy; and real, bright sources from the catalogue between 1 and 2 Jy. 
 
@@ -25,7 +25,7 @@ caput-pipeline run config_draco_vis_after_calibration.yaml #7
 
 #4 Generate timestream data with random gains and Gaussian noise. The noise includes a seed parameter. This is the visibility data that is input into CorrCal. The random gains are also input as the true/simulated gains. The parameters used in the Gaussian noise are also used to get the diagonal noise cov matrix in CorrCal.
 
-#5 Generate visibility timestreams for each bright source in the catalogue (6 sources, 1-2 Jy) without noise or gains. Used as the source vector in CorrCal.
+#5 Generate visibility timestreams for each bright source (in the map generated in step 1) without noise or gains. Used to obtain the source vector in CorrCal.
 
 #6 Python file to run CorrCal. The output is a gains_error file which contains the complex gain errors. These are in the shape (nfreq, 2*Ndish, ntime), as required for draco.
 
