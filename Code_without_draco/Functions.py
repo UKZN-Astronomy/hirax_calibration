@@ -655,7 +655,7 @@ def recovered_gains(m, runs, visibilities): # I use this for LogCal
         print (np.exp(rec_gains[ind_run,:]))
     return rec_gains
 
-# The next two functions were used to do the plots for Calibration error vs Systematic error
+# The next three functions were used to do the plots for Calibration error vs Systematic error
 
 def Vis_matrix_each_bl(m, visibilities, rec_gains_full_array):
     '''
