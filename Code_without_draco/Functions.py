@@ -138,7 +138,7 @@ def Mu(m, index):
     mu_index = alpha/(index-beta) * (S_max**(index-beta))
     return mu_index
 
-# Coded up equation 6 in Visibilities_and_Covariance.pdf 
+# Coded up equation 11 in Calibration_with_Pointsources.pdf 
 def Visibilities_poisson(m, x_scat, y_scat, freq, nside):
     '''
     Calculates visibilities due to unresolved point sources below the S_{max} set by the
@@ -184,7 +184,7 @@ def Visibilities_poisson(m, x_scat, y_scat, freq, nside):
         vis_poisson = np.append(vis_poisson, vis_ind)
     return vis_poisson
 
-# Coded up equation 9 in Visibilities_and_Covariance.pdf 
+# Coded up equation 14 in Calibration_with_Pointsources.pdf 
 def Covariance_poisson(m, x_scat, y_scat, freq, nside):
     '''
     Covariance matrix computed using unresolved point sources following a Poisson distribution,
@@ -426,7 +426,7 @@ def Src_vector(m, x_scat, y_scat, freq, nside, map, thresh_max_vals_beam):
             fringe_ind = fringe(angpos[non_zero_pix], zenith, bl_arr[i])
             vis_ind_source_ind = map_vals[non_zero_pix] * beammodel[non_zero_pix]**2 * fringe_ind
             src[i, n] = vis_ind_source_ind
-    Vis_bright_sources = np.sum(src, axis=1) #Corresponds to equation 11 in Visibilities_and_Covariance.pdf 
+    Vis_bright_sources = np.sum(src, axis=1) #Corresponds to equation 16 in Calibration_with_Pointsources.pdf 
 
     src_total = np.zeros((2*Nbls, 2*source_number))
     src_total[::2,::2] = src.real
